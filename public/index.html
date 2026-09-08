@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sanzu AI - Bot Dashboard</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
+    .container { max-width: 700px; margin: 0 auto; background: #1e293b; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+    h2, h3 { color: #38bdf8; margin-top: 0; }
+    label { font-weight: bold; display: block; margin-top: 15px; margin-bottom: 5px; }
+    textarea, input { width: 100%; padding: 10px; background: #0f172a; color: #f8fafc; border: 1px solid #334155; border-radius: 6px; box-sizing: border-box; }
+    button { background: #0284c7; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+    button:hover { background: #0369a1; }
+    ul { list-style: none; padding: 0; }
+    li { background: #0f172a; padding: 10px; margin-bottom: 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; }
+    .btn-del { background: #ef4444; padding: 5px 10px; margin-top: 0; }
+    .btn-del:hover { background: #dc2626; }
+    .row { display: flex; gap: 10px; }
+    .row input { flex: 1; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Sanzu AI Control Panel</h2>
+    
+    <label for="c3cInput">C3C / Appstate Cookie (JSON):</label>
+    <textarea id="c3cInput" rows="6" placeholder="Paste your c3c appstate JSON array here..."></textarea>
+    <button onclick="saveCookies()">Update Cookie Session</button>
+
+    <hr style="border-color: #334155; margin: 25px 0;">
+
+    <h3>Auto-Reply Pool (Always-On)</h3>
+    <p style="font-size: 0.9em; color: #94a3b8;">Random na pipiliin ng bot ang alinman sa mga linyang ito sa tuwing may magcha-chat sa Group Chat.</p>
+
+    <div class="row">
+      <input type="text" id="newPhrase" placeholder="Type new phrase..." />
+      <button onclick="addPhrase()">Add Phrase</button>
+    </div>
+
+    <ul id="phraseList"></ul>
+
+    <button onclick="saveAll()" style="width: 100%; background: #16a34a; padding: 12px; margin-top: 20px;">Save All Dashboard Settings</button>
+  </div>
+
+  <script>
+    let autoReplies = [];
+
+    async function loadConfig() {
+      const res = await fetch('/api/config');
+      const data = await res.json();
+      document.getElementById('c3cInput').value = JSON.stringify(data.c3cCookie || [], null, 2);
+      autoReplies = data.autoReplies || [];
+      renderList();
+    }
+
+    function renderList() {
+      const list = document.getElementById('phraseList');
+      list.innerHTML = '';
+      autoReplies.forEach((item, index) => {
+        list.innerHTML += `
+          <li>
+            <span>"${item}"</span>
+            <button class="btn-del" onclick="removePhrase(${index})">Delete</button>
+          </li>`;
+      });
+    }
+
+    function addPhrase() {
+      const val = document.getElementById('newPhrase').value.trim();
+      if (val) {
+        autoReplies.push(val);
+        document.getElementById('newPhrase').value = '';
+        renderList();
+      }
+    }
+
+    function removePhrase(index) {
+      autoReplies.splice(index, 1);
+      renderList();
+    }
+
+    async function saveCookies() {
+      try {
+        const cookies = JSON.parse(document.getElementById('c3cInput').value);
+        await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ c3cCookie: cookies })
+        });
+        alert('C3C Session Updated!');
+      } catch (e) {
+        alert('Invalid JSON format for C3C Cookies!');
+      }
+    }
+
+    async function saveAll() {
+      await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ autoReplies: autoReplies })
+      });
+      alert('Settings Saved Successfully!');
+    }
+
+    loadConfig();
+  </script>
+</body>
+</html>
