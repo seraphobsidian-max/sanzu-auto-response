@@ -1,7 +1,7 @@
 {
-  "name": "sanzu-autoreply-bot",
+  "name": "sanzu-ai",
   "version": "1.0.0",
-  "description": "24/7 Facebook Group Chat Auto-Reply Bot",
+  "description": "24/7 Facebook Group Chat Auto-Reply Bot with Web Dashboard",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
