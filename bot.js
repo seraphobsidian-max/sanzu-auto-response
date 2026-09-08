@@ -1,5 +1,5 @@
 const fs = require('fs');
-const login = require('fca-project-orion');
+const login = require('fca-unofficial');
 const path = require('path');
 
 const CONFIG_PATH = path.join(__dirname, 'config.json');
